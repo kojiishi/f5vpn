@@ -15,8 +15,10 @@
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-    if (self.appController)
+    if (self.appController) {
+        [self.appController disconnect];
         [self.appController savePrefs];
+    }
 }
 
 @end

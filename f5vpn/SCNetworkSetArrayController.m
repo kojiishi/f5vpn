@@ -62,22 +62,38 @@
     }
 }
 
+#define USE_SCSELECT
+// SCNetworkSetSetCurrent does not work (probably) unless setsid'ed
+
 - (void)setCurrentNetworkSet {
-#ifdef DOES_NOT_WORK
-    SCNetworkSetRef networkSet = self.selectedSCNetworkSet;
+#ifdef USE_SCSELECT
+    [self setCurrentNetworkSetName:self.selectedName];
+#else
+    [self setCurrentNetworkSet:self.selectedSCNetworkSet];
+#endif
+}
+
+- (void)setCurrentNetworkSet:(SCNetworkSetRef)networkSet {
     if (!networkSet)
         return;
+#ifdef USE_SCSELECT
+    [self setCurrentNetworkSetName:(__bridge NSString *)SCNetworkSetGetName(networkSet)];
+#else
     NSLog(@"SCNetworkSetSetCurrent:%@", SCNetworkSetGetName(networkSet));
     if (!SCNetworkSetSetCurrent(networkSet))
         NSLog(@"Cannot set current NetworkSet");
-#else
-    NSString* name = self.selectedName;
+#endif
+}
+
+- (void)setCurrentNetworkSetName:(NSString *)name {
     NSLog(@"SCNetworkSetSetCurrent:%@", name);
+#ifdef USE_SCSELECT
     NSTask* task = [[NSTask alloc] init];
     task.launchPath = @"/usr/sbin/scselect";
     task.arguments = [NSArray arrayWithObjects:name, nil];
     [task launch];
     [task waitUntilExit];
+#else
 #endif
 }
 

@@ -12,11 +12,14 @@
 
 @interface AppController : NSObject {
     NSTimer* statusTimer;
+    BOOL isConnected;
+    SCNetworkSetRef networkSetBeforeConnected;
 }
 
 @property (weak) IBOutlet WebView *webView;
 @property (weak) IBOutlet SCNetworkSetArrayController *networkSetList;
 - (void)loadPrefs;
 - (void)savePrefs;
+- (void)disconnect;
 
 @end

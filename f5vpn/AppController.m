@@ -90,12 +90,26 @@
     NSLog(@"Status=%@", text);
     if ([text isEqualToString:@"Connected"] == YES) {
         NSLog(@"Connected");
-        [self.networkSetList setCurrentNetworkSet];
+        if (!isConnected) {
+            isConnected = true;
+            SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("SystemConfiguration"), NULL);
+            networkSetBeforeConnected = SCNetworkSetCopyCurrent(prefs);
+            CFRelease(prefs);
+            [self.networkSetList setCurrentNetworkSet];
+        }
         return;
     }
     
     NSTimer* timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateStatus) userInfo:nil repeats:NO];
     statusTimer = timer;
+}
+
+- (void)disconnect {
+    if (networkSetBeforeConnected) {
+        [self.networkSetList setCurrentNetworkSet:networkSetBeforeConnected];
+        CFRelease(networkSetBeforeConnected);
+        networkSetBeforeConnected = NULL;
+    }
 }
 
 @end

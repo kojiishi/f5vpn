@@ -13,6 +13,9 @@
 
 - (SCNetworkSetRef)selectedSCNetworkSet;
 @property (retain) NSString* selectedName;
+
 - (void)setCurrentNetworkSet;
+- (void)setCurrentNetworkSet:(SCNetworkSetRef)networkSet;
+- (void)setCurrentNetworkSetName:(NSString*)name;
 
 @end

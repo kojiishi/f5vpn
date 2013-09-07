@@ -21,16 +21,22 @@
 
 - (void)login
 {
+    NSURLRequest* req = [NSURLRequest requestWithURL:[self loginURL]];
+    [[self.webView mainFrame] loadRequest:req];
+}
+
+- (NSURL*)loginURL
+{
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     NSURL* url = [defaults URLForKey:LoginURLKey];
-    if (!url) {
-        NSString* urlString = @"http://www.apple.com";
-        url = [NSURL URLWithString:urlString];
-        [defaults setURL:url forKey:LoginURLKey];
-    }
-    
-    NSURLRequest* req = [NSURLRequest requestWithURL:url];
-    [[self.webView mainFrame] loadRequest:req];
+    if (url)
+        return url;
+    NSString* urlString = [defaults stringForKey:LoginURLKey];
+    if (!urlString)
+        urlString = @"http://www.apple.com";
+    url = [NSURL URLWithString:urlString];
+    [defaults setURL:url forKey:LoginURLKey];
+    return url;
 }
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame

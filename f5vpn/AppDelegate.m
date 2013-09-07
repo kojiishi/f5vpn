@@ -15,4 +15,9 @@
     // Insert code here to initialize your application
 }
 
+- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
+{
+    NSLog(@"didFinishLoadForFrame");
+}
+
 @end

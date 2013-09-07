@@ -10,8 +10,8 @@
 
 @implementation AppDelegate
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+    [self.appController loadPrefs];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {

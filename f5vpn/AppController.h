@@ -16,6 +16,7 @@
 
 @property (weak) IBOutlet WebView *webView;
 @property (weak) IBOutlet SCNetworkSetArrayController *networkSetList;
+- (void)loadPrefs;
 - (void)savePrefs;
 
 @end

@@ -34,6 +34,13 @@
     CFRelease(prefs);
 }
 
+- (SCNetworkSetRef)selectedSCNetworkSet {
+    for (NSDictionary* value in self.selectedObjects) {
+        return (__bridge SCNetworkSetRef)[value valueForKey:@"key"];
+    }
+    return nil;    
+}
+
 - (NSString *)selectedName {
     for (NSDictionary* value in self.selectedObjects) {
         NSString* name = [value valueForKey:@"name"];
@@ -43,8 +50,9 @@
 }
 
 - (void)setSelectedName:(NSString *)name {
+    NSLog(@"setSelectedName:%@", name);
     int count = 0;
-    for (NSDictionary* value in self.selectedObjects) {
+    for (NSDictionary* value in self.content) {
         NSString* name1 = [value valueForKey:@"name"];
         if ([name isEqualToString:name1]) {
             self.selectionIndex = count;
@@ -52,6 +60,25 @@
         }
         count++;
     }
+}
+
+- (void)setCurrentNetworkSet {
+#ifdef DOES_NOT_WORK
+    SCNetworkSetRef networkSet = self.selectedSCNetworkSet;
+    if (!networkSet)
+        return;
+    NSLog(@"SCNetworkSetSetCurrent:%@", SCNetworkSetGetName(networkSet));
+    if (!SCNetworkSetSetCurrent(networkSet))
+        NSLog(@"Cannot set current NetworkSet");
+#else
+    NSString* name = self.selectedName;
+    NSLog(@"SCNetworkSetSetCurrent:%@", name);
+    NSTask* task = [[NSTask alloc] init];
+    task.launchPath = @"/usr/sbin/scselect";
+    task.arguments = [NSArray arrayWithObjects:name, nil];
+    [task launch];
+    [task waitUntilExit];
+#endif
 }
 
 @end

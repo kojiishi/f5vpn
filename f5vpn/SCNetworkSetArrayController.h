@@ -11,6 +11,8 @@
 
 @interface SCNetworkSetArrayController : NSArrayController
 
+- (SCNetworkSetRef)selectedSCNetworkSet;
 @property (retain) NSString* selectedName;
+- (void)setCurrentNetworkSet;
 
 @end

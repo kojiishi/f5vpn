@@ -15,12 +15,14 @@
 
 - (void)awakeFromNib
 {
+    [self login];
+}
+
+- (void)loadPrefs {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     NSString* networkSetName = [defaults stringForKey:NetworkSetKey];
     if (networkSetName)
         self.networkSetList.selectedName = networkSetName;
-
-    [self login];
 }
 
 - (void)savePrefs {
@@ -87,6 +89,8 @@
     NSString *text = [status innerText];
     NSLog(@"Status=%@", text);
     if ([text isEqualToString:@"Connected"] == YES) {
+        NSLog(@"Connected");
+        [self.networkSetList setCurrentNetworkSet];
         return;
     }
     

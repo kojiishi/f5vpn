@@ -14,4 +14,9 @@
 {
 }
 
+- (void)applicationWillTerminate:(NSNotification *)notification {
+    if (self.appController)
+        [self.appController savePrefs];
+}
+
 @end

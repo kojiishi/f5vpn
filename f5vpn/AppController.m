@@ -7,16 +7,25 @@
 //
 
 #import "AppController.h"
-#include <SystemConfiguration/SCNetworkConfiguration.h>
 
 #define LoginURLKey @"LoginURL"
+#define NetworkSetKey @"Location"
 
 @implementation AppController
 
 - (void)awakeFromNib
 {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSString* networkSetName = [defaults stringForKey:NetworkSetKey];
+    if (networkSetName)
+        self.networkSetList.selectedName = networkSetName;
+
     [self login];
-    [self updateNetworkSetList];
+}
+
+- (void)savePrefs {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setValue:self.networkSetList.selectedName forKey:NetworkSetKey];
 }
 
 - (void)login
@@ -83,20 +92,6 @@
     
     NSTimer* timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateStatus) userInfo:nil repeats:NO];
     statusTimer = timer;
-}
-
-- (void)updateNetworkSetList {
-    SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("SystemConfiguration"), NULL);
-    NSArray* locations = (__bridge NSArray*)SCNetworkSetCopyAll(prefs);
-    for (id item in locations) {
-        SCNetworkSetRef networkSet = (__bridge SCNetworkSetRef)item;
-        NSString *name = (__bridge NSString *)SCNetworkSetGetName(networkSet);
-        [self.networkSetList addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-            item, @"key", name, @"name", nil]];
-        NSLog(@"Location=%@", name);
-    }
-    CFRelease((__bridge CFArrayRef)locations);
-    CFRelease(prefs);
 }
 
 @end

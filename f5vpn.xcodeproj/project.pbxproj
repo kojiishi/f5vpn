@@ -20,6 +20,7 @@
 		CE3D550417DAA72F00D2C190 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3D54E417DAA72F00D2C190 /* Cocoa.framework */; };
 		CE3D550C17DAA72F00D2C190 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE3D550A17DAA72F00D2C190 /* InfoPlist.strings */; };
 		CE3D550F17DAA72F00D2C190 /* f5vpnTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CE3D550E17DAA72F00D2C190 /* f5vpnTests.m */; };
+		CEC61C1617DB4487000CB4C8 /* SCNetworkSetArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEC61C1517DB4487000CB4C8 /* SCNetworkSetArrayController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,8 @@
 		CE3D550B17DAA72F00D2C190 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		CE3D550D17DAA72F00D2C190 /* f5vpnTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = f5vpnTests.h; sourceTree = "<group>"; };
 		CE3D550E17DAA72F00D2C190 /* f5vpnTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = f5vpnTests.m; sourceTree = "<group>"; };
+		CEC61C1417DB4487000CB4C8 /* SCNetworkSetArrayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCNetworkSetArrayController.h; sourceTree = "<group>"; };
+		CEC61C1517DB4487000CB4C8 /* SCNetworkSetArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCNetworkSetArrayController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +133,8 @@
 				CE3D54F917DAA72F00D2C190 /* MainMenu.xib */,
 				CE1F5D9217DAC5F2004A4D21 /* AppController.h */,
 				CE1F5D9317DAC5F2004A4D21 /* AppController.m */,
+				CEC61C1417DB4487000CB4C8 /* SCNetworkSetArrayController.h */,
+				CEC61C1517DB4487000CB4C8 /* SCNetworkSetArrayController.m */,
 				CE3D54EB17DAA72F00D2C190 /* Supporting Files */,
 			);
 			path = f5vpn;
@@ -277,6 +282,7 @@
 				CE3D54F117DAA72F00D2C190 /* main.m in Sources */,
 				CE3D54F817DAA72F00D2C190 /* AppDelegate.m in Sources */,
 				CE1F5D9417DAC5F2004A4D21 /* AppController.m in Sources */,
+				CEC61C1617DB4487000CB4C8 /* SCNetworkSetArrayController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

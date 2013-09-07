@@ -8,12 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
+#import "SCNetworkSetArrayController.h"
 
 @interface AppController : NSObject {
     NSTimer* statusTimer;
 }
 
 @property (weak) IBOutlet WebView *webView;
-@property (weak) IBOutlet NSArrayController *networkSetList;
+@property (weak) IBOutlet SCNetworkSetArrayController *networkSetList;
+- (void)savePrefs;
 
 @end

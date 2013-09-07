@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4B18074917DAB7DA00A1C8E8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B18074817DAB7DA00A1C8E8 /* SystemConfiguration.framework */; };
 		CE1F5D8E17DAB023004A4D21 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE1F5D8D17DAB023004A4D21 /* WebKit.framework */; };
 		CE3D54E517DAA72F00D2C190 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3D54E417DAA72F00D2C190 /* Cocoa.framework */; };
 		CE3D54EF17DAA72F00D2C190 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE3D54ED17DAA72F00D2C190 /* InfoPlist.strings */; };
@@ -31,6 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4B18074817DAB7DA00A1C8E8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		CE1F5D8D17DAB023004A4D21 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		CE3D54E117DAA72F00D2C190 /* f5vpn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = f5vpn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE3D54E417DAA72F00D2C190 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -58,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B18074917DAB7DA00A1C8E8 /* SystemConfiguration.framework in Frameworks */,
 				CE1F5D8E17DAB023004A4D21 /* WebKit.framework in Frameworks */,
 				CE3D54E517DAA72F00D2C190 /* Cocoa.framework in Frameworks */,
 			);
@@ -78,6 +81,7 @@
 		CE3D54D817DAA72F00D2C190 = {
 			isa = PBXGroup;
 			children = (
+				4B18074817DAB7DA00A1C8E8 /* SystemConfiguration.framework */,
 				CE1F5D8D17DAB023004A4D21 /* WebKit.framework */,
 				CE3D54EA17DAA72F00D2C190 /* f5vpn */,
 				CE3D550717DAA72F00D2C190 /* f5vpnTests */,

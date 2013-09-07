@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#include <SystemConfiguration/SCNetworkConfiguration.h>
 
 @implementation AppDelegate
 
@@ -15,6 +16,7 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [self login];
+    [self updateNetworkSetList];
 }
 
 - (void)login
@@ -57,6 +59,18 @@
         return;
     NSString *text = [status innerText];
     NSLog(@"Status=%@", text);
+}
+
+- (void)updateNetworkSetList {
+    SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("SystemConfiguration"), NULL);
+    NSArray* locations = (__bridge NSArray*)SCNetworkSetCopyAll(prefs);
+    for (id item in locations) {
+        NSString *name = (__bridge NSString *)SCNetworkSetGetName((__bridge SCNetworkSetRef)item);
+        NSLog(@"Location=%@", name);
+    }
+    [self.networkSetList addObjects:locations];
+    CFRelease((__bridge CFArrayRef)locations);
+    CFRelease(prefs);
 }
 
 @end

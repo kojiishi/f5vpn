@@ -26,11 +26,37 @@
         url = [NSURL URLWithString:urlString];
         [defaults setURL:url forKey:LoginURLKey];
     }
+
+    NSURLRequest* req = [NSURLRequest requestWithURL:url];
+    [[self.webView mainFrame] loadRequest:req];
 }
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
     NSLog(@"didFinishLoadForFrame");
+
+    // Fill authentication form
+    DOMDocument *dom = [sender mainFrameDocument];
+    DOMElement *form = [dom getElementById:@"auth_form"];
+    if (form) {
+        DOMElement *user = [dom getElementById:@"input_1"];
+        DOMElement *pwd = [dom getElementById:@"input_2"];
+        if (user && pwd) {
+            [user setAttribute:@"value" value:NSUserName()];
+            [pwd focus];
+        }
+        return;
+    }
+
+    [self updateStatus:dom];
+}
+
+- (void)updateStatus:(DOMDocument *)dom {
+    DOMElement *status = [dom getElementById:@"status"];
+    if (!status)
+        return;
+    NSString *text = [status innerText];
+    NSLog(@"Status=%@", text);
 }
 
 @end

@@ -9,7 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-@interface AppController : NSObject
+@interface AppController : NSObject {
+    NSTimer* statusTimer;
+}
 
 @property (weak) IBOutlet WebView *webView;
 @property (weak) IBOutlet NSArrayController *networkSetList;

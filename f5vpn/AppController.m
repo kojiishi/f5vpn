@@ -59,12 +59,30 @@
     [self updateStatus:dom];
 }
 
+- (void)updateStatus {
+    DOMDocument *dom = [self.webView mainFrameDocument];
+    [self updateStatus:dom];
+}
+
 - (void)updateStatus:(DOMDocument *)dom {
+    NSLog(@"updateStatus");
+    if (statusTimer) {
+        [statusTimer invalidate];
+        statusTimer = nil;
+    }
+    
     DOMElement *status = [dom getElementById:@"status"];
     if (!status)
         return;
+
     NSString *text = [status innerText];
     NSLog(@"Status=%@", text);
+    if ([text isEqualToString:@"Connected"] == YES) {
+        return;
+    }
+    
+    NSTimer* timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateStatus) userInfo:nil repeats:NO];
+    statusTimer = timer;
 }
 
 - (void)updateNetworkSetList {

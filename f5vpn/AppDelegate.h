@@ -13,5 +13,6 @@
 
 @property (assign) IBOutlet NSWindow *window;
 @property (weak) IBOutlet WebView *webView;
+@property (weak) IBOutlet NSArrayController *networkSetList;
 
 @end

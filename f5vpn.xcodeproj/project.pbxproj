@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4B18074917DAB7DA00A1C8E8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B18074817DAB7DA00A1C8E8 /* SystemConfiguration.framework */; };
 		CE1F5D8E17DAB023004A4D21 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE1F5D8D17DAB023004A4D21 /* WebKit.framework */; };
+		CE1F5D9417DAC5F2004A4D21 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE1F5D9317DAC5F2004A4D21 /* AppController.m */; };
 		CE3D54E517DAA72F00D2C190 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3D54E417DAA72F00D2C190 /* Cocoa.framework */; };
 		CE3D54EF17DAA72F00D2C190 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CE3D54ED17DAA72F00D2C190 /* InfoPlist.strings */; };
 		CE3D54F117DAA72F00D2C190 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CE3D54F017DAA72F00D2C190 /* main.m */; };
@@ -34,6 +35,8 @@
 /* Begin PBXFileReference section */
 		4B18074817DAB7DA00A1C8E8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		CE1F5D8D17DAB023004A4D21 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		CE1F5D9217DAC5F2004A4D21 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
+		CE1F5D9317DAC5F2004A4D21 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppController.m; sourceTree = "<group>"; };
 		CE3D54E117DAA72F00D2C190 /* f5vpn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = f5vpn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE3D54E417DAA72F00D2C190 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		CE3D54E717DAA72F00D2C190 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -125,6 +128,8 @@
 				CE3D54F617DAA72F00D2C190 /* AppDelegate.h */,
 				CE3D54F717DAA72F00D2C190 /* AppDelegate.m */,
 				CE3D54F917DAA72F00D2C190 /* MainMenu.xib */,
+				CE1F5D9217DAC5F2004A4D21 /* AppController.h */,
+				CE1F5D9317DAC5F2004A4D21 /* AppController.m */,
 				CE3D54EB17DAA72F00D2C190 /* Supporting Files */,
 			);
 			path = f5vpn;
@@ -271,6 +276,7 @@
 			files = (
 				CE3D54F117DAA72F00D2C190 /* main.m in Sources */,
 				CE3D54F817DAA72F00D2C190 /* AppDelegate.m in Sources */,
+				CE1F5D9417DAC5F2004A4D21 /* AppController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

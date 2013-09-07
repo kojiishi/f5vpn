@@ -10,9 +10,22 @@
 
 @implementation AppDelegate
 
+#define LoginURLKey @"LoginURL"
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    // Insert code here to initialize your application
+    [self login];
+}
+
+- (void)login
+{
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSURL* url = [defaults URLForKey:LoginURLKey];
+    if (!url) {
+        NSString* urlString = @"http://www.apple.com";
+        url = [NSURL URLWithString:urlString];
+        [defaults setURL:url forKey:LoginURLKey];
+    }
 }
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame

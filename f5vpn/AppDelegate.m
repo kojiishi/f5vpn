@@ -7,11 +7,8 @@
 //
 
 #import "AppDelegate.h"
-#include <SystemConfiguration/SCNetworkConfiguration.h>
 
 @implementation AppDelegate
-
-#define LoginURLKey @"LoginURL"
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {

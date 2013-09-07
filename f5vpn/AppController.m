@@ -9,9 +9,9 @@
 #import "AppController.h"
 #include <SystemConfiguration/SCNetworkConfiguration.h>
 
-@implementation AppController
-
 #define LoginURLKey @"LoginURL"
+
+@implementation AppController
 
 - (void)awakeFromNib
 {

@@ -26,34 +26,23 @@
     for (id item in locations) {
         SCNetworkSetRef networkSet = (__bridge SCNetworkSetRef)item;
         NSString *name = (__bridge NSString *)SCNetworkSetGetName(networkSet);
-        [self addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-            item, @"key", name, @"name", nil]];
+        [self addObject:name];
         NSLog(@"Location=%@", name);
     }
     CFRelease((__bridge CFArrayRef)locations);
     CFRelease(prefs);
 }
 
-- (SCNetworkSetRef)selectedSCNetworkSet {
-    for (NSDictionary* value in self.selectedObjects) {
-        return (__bridge SCNetworkSetRef)[value valueForKey:@"key"];
-    }
-    return nil;    
-}
-
 - (NSString *)selectedName {
-    for (NSDictionary* value in self.selectedObjects) {
-        NSString* name = [value valueForKey:@"name"];
+    for (NSString* name in self.selectedObjects)
         return name;
-    }
     return nil;
 }
 
 - (void)setSelectedName:(NSString *)name {
     NSLog(@"setSelectedName:%@", name);
     int count = 0;
-    for (NSDictionary* value in self.content) {
-        NSString* name1 = [value valueForKey:@"name"];
+    for (NSString* name1 in self.content) {
         if ([name isEqualToString:name1]) {
             self.selectionIndex = count;
             return;
@@ -62,30 +51,28 @@
     }
 }
 
-#define USE_SCSELECT
 // SCNetworkSetSetCurrent does not work (probably) unless setsid'ed
+#define USE_SCSELECT
 
 - (void)setCurrentNetworkSet {
 #ifdef USE_SCSELECT
-    [self setCurrentNetworkSetName:self.selectedName];
+    [SCNetworkSetArrayController setCurrentNetworkSetName:self.selectedName];
 #else
     [self setCurrentNetworkSet:self.selectedSCNetworkSet];
 #endif
 }
 
-- (void)setCurrentNetworkSet:(SCNetworkSetRef)networkSet {
-    if (!networkSet)
-        return;
-#ifdef USE_SCSELECT
-    [self setCurrentNetworkSetName:(__bridge NSString *)SCNetworkSetGetName(networkSet)];
-#else
-    NSLog(@"SCNetworkSetSetCurrent:%@", SCNetworkSetGetName(networkSet));
-    if (!SCNetworkSetSetCurrent(networkSet))
-        NSLog(@"Cannot set current NetworkSet");
-#endif
++ (NSString *)currentNetworkSetName {
+    SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("SystemConfiguration"), NULL);
+    SCNetworkSetRef networkSet = SCNetworkSetCopyCurrent(prefs);
+    NSString *name = (__bridge NSString *)SCNetworkSetGetName(networkSet);
+    NSLog(@"Current=%@", name);
+    CFRelease(networkSet);
+    CFRelease(prefs);
+    return name;
 }
 
-- (void)setCurrentNetworkSetName:(NSString *)name {
++ (void)setCurrentNetworkSetName:(NSString *)name {
     NSLog(@"SCNetworkSetSetCurrent:%@", name);
 #ifdef USE_SCSELECT
     NSTask* task = [[NSTask alloc] init];

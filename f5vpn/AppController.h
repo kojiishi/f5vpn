@@ -13,7 +13,7 @@
 @interface AppController : NSObject {
     NSTimer* statusTimer;
     BOOL isConnected;
-    SCNetworkSetRef networkSetBeforeConnected;
+    NSString* networkSetBeforeConnected;
 }
 
 @property (weak) IBOutlet WebView *webView;

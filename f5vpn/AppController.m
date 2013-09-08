@@ -92,9 +92,7 @@
         NSLog(@"Connected");
         if (!isConnected) {
             isConnected = true;
-            SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("SystemConfiguration"), NULL);
-            networkSetBeforeConnected = SCNetworkSetCopyCurrent(prefs);
-            CFRelease(prefs);
+            networkSetBeforeConnected = [SCNetworkSetArrayController currentNetworkSetName];
             [self.networkSetList setCurrentNetworkSet];
         }
         return;
@@ -106,9 +104,8 @@
 
 - (void)disconnect {
     if (networkSetBeforeConnected) {
-        [self.networkSetList setCurrentNetworkSet:networkSetBeforeConnected];
-        CFRelease(networkSetBeforeConnected);
-        networkSetBeforeConnected = NULL;
+        [SCNetworkSetArrayController setCurrentNetworkSetName:networkSetBeforeConnected];
+        networkSetBeforeConnected = nil;
     }
 }
 

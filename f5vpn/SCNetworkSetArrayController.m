@@ -22,14 +22,14 @@
 
 - (void)updateObjects {
     SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("SystemConfiguration"), NULL);
-    NSArray* locations = (__bridge NSArray*)SCNetworkSetCopyAll(prefs);
-    for (id item in locations) {
+    CFArrayRef locations = SCNetworkSetCopyAll(prefs);
+    for (id item in (__bridge NSArray*)locations) {
         SCNetworkSetRef networkSet = (__bridge SCNetworkSetRef)item;
         NSString *name = (__bridge NSString *)SCNetworkSetGetName(networkSet);
         [self addObject:name];
         NSLog(@"Location=%@", name);
     }
-    CFRelease((__bridge CFArrayRef)locations);
+    CFRelease(locations);
     CFRelease(prefs);
 }
 
@@ -65,7 +65,7 @@
 + (NSString *)currentNetworkSetName {
     SCPreferencesRef prefs = SCPreferencesCreate(NULL, CFSTR("SystemConfiguration"), NULL);
     SCNetworkSetRef networkSet = SCNetworkSetCopyCurrent(prefs);
-    NSString *name = (__bridge NSString *)SCNetworkSetGetName(networkSet);
+    NSString *name = (__bridge NSString*)SCNetworkSetGetName(networkSet);
     NSLog(@"Current=%@", name);
     CFRelease(networkSet);
     CFRelease(prefs);

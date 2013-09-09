@@ -18,6 +18,7 @@
 
 @property (weak) IBOutlet WebView *webView;
 @property (weak) IBOutlet SCNetworkSetArrayController *networkSetList;
+- (IBAction)login:(id)sender;
 - (void)loadPrefs;
 - (void)savePrefs;
 - (void)disconnect;

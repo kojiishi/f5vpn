@@ -32,6 +32,10 @@
 
 - (void)login
 {
+    [self login:nil];
+}
+
+- (IBAction)login:(id)sender {
     NSURLRequest* req = [NSURLRequest requestWithURL:[self loginURL]];
     [[self.webView mainFrame] loadRequest:req];
 }

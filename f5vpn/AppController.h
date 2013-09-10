@@ -16,7 +16,9 @@
     NSString* networkSetBeforeConnected;
 }
 
+@property (unsafe_unretained) IBOutlet NSWindow *window;
 @property (weak) IBOutlet WebView *webView;
+@property (weak) IBOutlet NSProgressIndicator *progressIndicator;
 @property (weak) IBOutlet SCNetworkSetArrayController *networkSetList;
 - (IBAction)login:(id)sender;
 - (void)loadPrefs;

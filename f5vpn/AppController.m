@@ -54,10 +54,35 @@
     return url;
 }
 
+- (void)webView:(WebView *)sender didStartProvisionalLoadForFrame:(WebFrame *)frame
+{
+    NSLog(@"didStartProvisionalLoadForFrame");
+    [_progressIndicator startAnimation:self];
+}
+
+- (void)webView:(WebView *)sender didFailProvisionalLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
+{
+    NSLog(@"didFailProvisionalLoadWithError");
+    [self showError:error];
+}
+
+- (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
+{
+    NSLog(@"didFailLoadWithError");
+    [self showError:error];
+}
+
+- (void)showError:(NSError*)error
+{
+    [_progressIndicator stopAnimation:self];
+    [[NSAlert alertWithError:error] beginSheetModalForWindow:_window modalDelegate:nil didEndSelector:nil contextInfo:nil];
+}
+
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
     NSLog(@"didFinishLoadForFrame");
-    
+    [_progressIndicator stopAnimation:self];
+
     // Fill authentication form
     DOMDocument *dom = [sender mainFrameDocument];
     DOMElement *form = [dom getElementById:@"auth_form"];

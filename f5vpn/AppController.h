@@ -10,11 +10,7 @@
 #import <WebKit/WebKit.h>
 #import "SCNetworkSetArrayController.h"
 
-@interface AppController : NSObject {
-    NSTimer* statusTimer;
-    BOOL isConnected;
-    NSString* networkSetBeforeConnected;
-}
+@interface AppController : NSObject
 
 @property (unsafe_unretained) IBOutlet NSWindow *window;
 @property (weak) IBOutlet WebView *webView;

@@ -12,6 +12,11 @@
 #define NetworkSetKey @"Location"
 
 @implementation AppController
+{
+    NSTimer* statusTimer;
+    BOOL isConnected;
+    NSString* networkSetBeforeConnected;
+}
 
 - (void)awakeFromNib
 {
@@ -22,12 +27,12 @@
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     NSString* networkSetName = [defaults stringForKey:NetworkSetKey];
     if (networkSetName)
-        self.networkSetList.selectedName = networkSetName;
+        _networkSetList.selectedName = networkSetName;
 }
 
 - (void)savePrefs {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setValue:self.networkSetList.selectedName forKey:NetworkSetKey];
+    [defaults setValue:_networkSetList.selectedName forKey:NetworkSetKey];
 }
 
 - (void)login
@@ -37,7 +42,7 @@
 
 - (IBAction)login:(id)sender {
     NSURLRequest* req = [NSURLRequest requestWithURL:[self loginURL]];
-    [[self.webView mainFrame] loadRequest:req];
+    [[_webView mainFrame] loadRequest:req];
 }
 
 - (NSURL*)loginURL

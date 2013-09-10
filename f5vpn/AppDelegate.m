@@ -11,13 +11,13 @@
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    [self.appController loadPrefs];
+    [_appController loadPrefs];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-    if (self.appController) {
-        [self.appController disconnect];
-        [self.appController savePrefs];
+    if (_appController) {
+        [_appController disconnect];
+        [_appController savePrefs];
     }
 }
 

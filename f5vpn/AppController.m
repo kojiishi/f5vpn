@@ -115,9 +115,10 @@
     if (!status)
         return;
 
-    NSString *text = [status innerText];
-    NSLog(@"Status=%@", text);
-    if ([text isEqualToString:@"Connected"] == YES) {
+    NSString *statusText = [status innerText];
+    NSLog(@"Status=%@", statusText);
+    _window.title = [NSString stringWithFormat:@"f5vpn - %@", statusText];
+    if ([statusText isEqualToString:@"Connected"] == YES) {
         NSLog(@"Connected");
         if (!isConnected) {
             isConnected = true;

@@ -40,15 +40,11 @@
 }
 
 - (void)setSelectedName:(NSString *)name {
-    NSLog(@"setSelectedName:%@", name);
-    int count = 0;
-    for (NSString* name1 in self.content) {
-        if ([name isEqualToString:name1]) {
-            self.selectionIndex = count;
-            return;
-        }
-        count++;
-    }
+    NSUInteger index = [self.content indexOfObject:name];
+    NSLog(@"setSelectedName:%@ (%ld)", name, (unsigned long)index);
+    if (index == NSNotFound)
+        return;
+    self.selectionIndex = index;
 }
 
 // SCNetworkSetSetCurrent does not work (probably) unless setsid'ed

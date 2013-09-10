@@ -65,6 +65,11 @@
     [_progressIndicator startAnimation:self];
 }
 
+- (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame
+{
+    NSLog(@"didReceiveTitle(%@)", title);
+}
+
 - (void)webView:(WebView *)sender didFailProvisionalLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
 {
     NSLog(@"didFailProvisionalLoadWithError");

@@ -10,7 +10,7 @@
 #import <WebKit/WebKit.h>
 #import "SCNetworkSetArrayController.h"
 
-@interface AppController : NSObject
+@interface AppController : NSObject <DOMEventListener>
 
 @property (unsafe_unretained) IBOutlet NSWindow *window;
 @property (weak) IBOutlet WebView *webView;

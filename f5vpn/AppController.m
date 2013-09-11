@@ -13,7 +13,7 @@
 
 @implementation AppController
 {
-    NSTimer* statusTimer;
+    BOOL isStatusEventListenerAttached;
     BOOL isConnected;
     NSString* networkSetBeforeConnected;
 }
@@ -59,6 +59,12 @@
     return url;
 }
 
+- (void)disconnect
+{
+    // This method does not disconnect--ok for now as far as applicationWillTerminate is the only caller
+    [self didDisconnect];
+}
+
 - (void)webView:(WebView *)sender didStartProvisionalLoadForFrame:(WebFrame *)frame
 {
     NSLog(@"didStartProvisionalLoadForFrame");
@@ -82,16 +88,11 @@
     [self showError:error];
 }
 
-- (void)showError:(NSError*)error
-{
-    [_progressIndicator stopAnimation:self];
-    [[NSAlert alertWithError:error] beginSheetModalForWindow:_window modalDelegate:nil didEndSelector:nil contextInfo:nil];
-}
-
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
     NSLog(@"didFinishLoadForFrame");
     [_progressIndicator stopAnimation:self];
+    isStatusEventListenerAttached = NO;
 
     // Fill authentication form
     DOMDocument *dom = [sender mainFrameDocument];
@@ -116,37 +117,54 @@
 
 - (void)updateStatus:(DOMDocument *)dom {
     NSLog(@"updateStatus");
-    if (statusTimer) {
-        [statusTimer invalidate];
-        statusTimer = nil;
-    }
     
     DOMElement *status = [dom getElementById:@"status"];
     if (!status)
         return;
 
+    if (!isStatusEventListenerAttached) {
+        NSLog(@"addEventListener");
+        [status addEventListener:@"DOMSubtreeModified" listener:self useCapture:YES];
+        isStatusEventListenerAttached = YES;
+    }
+
     NSString *statusText = [status innerText];
     NSLog(@"Status=%@", statusText);
     _window.title = [NSString stringWithFormat:@"f5vpn - %@", statusText];
-    if ([statusText isEqualToString:@"Connected"] == YES) {
-        NSLog(@"Connected");
-        if (!isConnected) {
-            isConnected = true;
-            networkSetBeforeConnected = [SCNetworkSetArrayController currentNetworkSetName];
-            [self.networkSetList setCurrentNetworkSet];
-        }
-        return;
-    }
-    
-    NSTimer* timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateStatus) userInfo:nil repeats:NO];
-    statusTimer = timer;
+    if ([statusText isEqualToString:@"Connected"])
+        [self didConnect];
+    else if ([statusText isEqualToString:@"Disconnected"])
+        [self didDisconnect];
 }
 
-- (void)disconnect {
+- (void)handleEvent:(DOMEvent *)evt;
+{
+    NSLog(@"handleEvent");
+    [self updateStatus];
+}
+
+- (void)didConnect {
+    NSLog(@"Connected");
+    if (isConnected)
+        return;
+    isConnected = YES;
+    networkSetBeforeConnected = [SCNetworkSetArrayController currentNetworkSetName];
+    [self.networkSetList setCurrentNetworkSet];
+}
+
+- (void)didDisconnect {
+    NSLog(@"Disconnected");
+    isConnected = NO;
     if (networkSetBeforeConnected) {
         [SCNetworkSetArrayController setCurrentNetworkSetName:networkSetBeforeConnected];
         networkSetBeforeConnected = nil;
     }
+}
+
+- (void)showError:(NSError*)error
+{
+    [_progressIndicator stopAnimation:self];
+    [[NSAlert alertWithError:error] beginSheetModalForWindow:_window modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
 @end

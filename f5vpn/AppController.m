@@ -13,9 +13,10 @@
 
 @implementation AppController
 {
+    NSStatusItem* statusItem;
+    NSString* networkSetBeforeConnected;
     BOOL isStatusEventListenerAttached;
     BOOL isConnected;
-    NSString* networkSetBeforeConnected;
 }
 
 - (void)awakeFromNib
@@ -130,7 +131,11 @@
 
     NSString *statusText = [status innerText];
     NSLog(@"Status=%@", statusText);
-    _window.title = [NSString stringWithFormat:@"f5vpn - %@", statusText];
+
+    if (!statusItem)
+        statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    [statusItem setTitle:statusText];
+
     if ([statusText isEqualToString:@"Connected"])
         [self didConnect];
     else if ([statusText isEqualToString:@"Disconnected"])

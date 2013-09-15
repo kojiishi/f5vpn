@@ -1,0 +1,24 @@
+<html>
+<head>
+<style type="text/css">
+html {
+    font-size:12pt;
+}
+</style>
+</head>
+<body>
+    <p>
+        The VPN login URL is not set.
+    <p>
+        Please consult with your system administrator for the login URL.
+        The login URL is typically in the form of <code>https://<i>host.name</i>/tp</code>.
+    <p>
+        Once you got your login URL, please follow the procedure below to set the URL.
+    <ol>
+        <li>Open Terminal application.
+        <li>Type the following command and hit Enter key:
+            <pre>defaults write ec.koji.f5vpn LoginURL <i>your-login-URL</i></pre>
+            where <i>your-login-URL</i> is the URL you got from your system administrator.
+    </ol>
+</body>
+</html>

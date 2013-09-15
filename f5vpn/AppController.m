@@ -53,10 +53,10 @@
     if (url)
         return url;
     NSString* urlString = [defaults stringForKey:LoginURLKey];
-    if (!urlString)
-        urlString = @"http://www.apple.com";
-    url = [NSURL URLWithString:urlString];
-    [defaults setURL:url forKey:LoginURLKey];
+    if (urlString)
+        return [NSURL URLWithString:urlString];
+    url = [[NSBundle mainBundle] URLForResource:@"NoURL" withExtension:@"html"];
+//    [defaults setURL:url forKey:LoginURLKey];
     return url;
 }
 

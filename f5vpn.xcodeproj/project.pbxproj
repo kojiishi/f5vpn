@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4B18074917DAB7DA00A1C8E8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B18074817DAB7DA00A1C8E8 /* SystemConfiguration.framework */; };
+		CE178CE717E5BFA100334395 /* NoURL.html in Resources */ = {isa = PBXBuildFile; fileRef = CE178CE517E5BFA100334395 /* NoURL.html */; };
 		CE1F5D8E17DAB023004A4D21 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE1F5D8D17DAB023004A4D21 /* WebKit.framework */; };
 		CE1F5D9417DAC5F2004A4D21 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE1F5D9317DAC5F2004A4D21 /* AppController.m */; };
 		CE3D54E517DAA72F00D2C190 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE3D54E417DAA72F00D2C190 /* Cocoa.framework */; };
@@ -35,6 +36,7 @@
 
 /* Begin PBXFileReference section */
 		4B18074817DAB7DA00A1C8E8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		CE178CE617E5BFA100334395 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = en; path = en.lproj/NoURL.html; sourceTree = "<group>"; };
 		CE1F5D8D17DAB023004A4D21 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		CE1F5D9217DAC5F2004A4D21 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
 		CE1F5D9317DAC5F2004A4D21 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppController.m; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				CE3D54F017DAA72F00D2C190 /* main.m */,
 				CE3D54F217DAA72F00D2C190 /* f5vpn-Prefix.pch */,
 				CE3D54F317DAA72F00D2C190 /* Credits.rtf */,
+				CE178CE517E5BFA100334395 /* NoURL.html */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -245,6 +248,7 @@
 				CE3D54EF17DAA72F00D2C190 /* InfoPlist.strings in Resources */,
 				CE3D54F517DAA72F00D2C190 /* Credits.rtf in Resources */,
 				CE3D54FB17DAA72F00D2C190 /* MainMenu.xib in Resources */,
+				CE178CE717E5BFA100334395 /* NoURL.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,6 +309,14 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		CE178CE517E5BFA100334395 /* NoURL.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CE178CE617E5BFA100334395 /* en */,
+			);
+			name = NoURL.html;
+			sourceTree = "<group>";
+		};
 		CE3D54ED17DAA72F00D2C190 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (

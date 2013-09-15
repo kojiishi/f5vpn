@@ -19,6 +19,5 @@
 - (IBAction)login:(id)sender;
 - (void)loadPrefs;
 - (void)savePrefs;
-- (void)disconnect;
 
 @end

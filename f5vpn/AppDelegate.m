@@ -14,11 +14,4 @@
     [_appController loadPrefs];
 }
 
-- (void)applicationWillTerminate:(NSNotification *)notification {
-    if (_appController) {
-        [_appController disconnect];
-        [_appController savePrefs];
-    }
-}
-
 @end

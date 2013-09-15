@@ -21,17 +21,29 @@
 
 - (void)awakeFromNib
 {
+    NSLog(@"awakeFromNib");
     [self login];
 }
 
-- (void)loadPrefs {
+- (void)windowWillClose:(NSNotification*)notification
+{
+    NSLog(@"windowWillClose");
+    [self didDisconnect];
+    [self savePrefs];
+}
+
+- (void)loadPrefs
+{
+    NSLog(@"loadPrefs");
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     NSString* networkSetName = [defaults stringForKey:NetworkSetKey];
     if (networkSetName)
         _networkSetList.selectedName = networkSetName;
 }
 
-- (void)savePrefs {
+- (void)savePrefs
+{
+    NSLog(@"savePrefs");
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     [defaults setValue:_networkSetList.selectedName forKey:NetworkSetKey];
 }
@@ -58,12 +70,6 @@
     url = [[NSBundle mainBundle] URLForResource:@"NoURL" withExtension:@"html"];
 //    [defaults setURL:url forKey:LoginURLKey];
     return url;
-}
-
-- (void)disconnect
-{
-    // This method does not disconnect--ok for now as far as applicationWillTerminate is the only caller
-    [self didDisconnect];
 }
 
 - (void)webView:(WebView *)sender didStartProvisionalLoadForFrame:(WebFrame *)frame

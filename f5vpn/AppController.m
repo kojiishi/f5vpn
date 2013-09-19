@@ -8,12 +8,15 @@
 
 #import "AppController.h"
 
+//#define ENABLE_StatusItem
 #define LoginURLKey @"LoginURL"
 #define NetworkSetKey @"Location"
 
 @implementation AppController
 {
+#ifdef ENABLE_StatusItem
     NSStatusItem* statusItem;
+#endif
     NSString* networkSetBeforeConnected;
     BOOL isStatusEventListenerAttached;
     BOOL isConnected;
@@ -110,6 +113,7 @@
         if (user && pwd) {
             [user setAttribute:@"value" value:NSUserName()];
             [pwd focus];
+            [self didReadyToLogin];
         }
         return;
     }
@@ -138,9 +142,11 @@
     NSString *statusText = [status innerText];
     NSLog(@"Status=%@", statusText);
 
+#ifdef ENABLE_StatusItem
     if (!statusItem)
         statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     [statusItem setTitle:statusText];
+#endif
 
     if ([statusText isEqualToString:@"Connected"])
         [self didConnect];
@@ -154,22 +160,41 @@
     [self updateStatus];
 }
 
+- (void)didReadyToLogin
+{
+    NSUserNotification* notification = [[NSUserNotification alloc] init];
+    notification.title = @"f5vpn ready to login";
+    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+}
+
 - (void)didConnect {
     NSLog(@"Connected");
     if (isConnected)
         return;
     isConnected = YES;
+
     networkSetBeforeConnected = [SCNetworkSetArrayController currentNetworkSetName];
     [self.networkSetList setCurrentNetworkSet];
+
+    NSUserNotification* notification = [[NSUserNotification alloc] init];
+    notification.title = @"f5vpn connected";
+    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
 }
 
 - (void)didDisconnect {
     NSLog(@"Disconnected");
+    if (!isConnected)
+        return;
     isConnected = NO;
+
     if (networkSetBeforeConnected) {
         [SCNetworkSetArrayController setCurrentNetworkSetName:networkSetBeforeConnected];
         networkSetBeforeConnected = nil;
     }
+    
+    NSUserNotification* notification = [[NSUserNotification alloc] init];
+    notification.title = @"f5vpn disconnected";
+    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
 }
 
 - (void)showError:(NSError*)error

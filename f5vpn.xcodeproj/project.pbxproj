@@ -221,6 +221,11 @@
 			attributes = {
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "Koji Ishii";
+				TargetAttributes = {
+					CE3D54E017DAA72F00D2C190 = {
+						DevelopmentTeam = TA37P7AT42;
+					};
+				};
 			};
 			buildConfigurationList = CE3D54DC17DAA72F00D2C190 /* Build configuration list for PBXProject "f5vpn" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -412,6 +417,7 @@
 		CE3D551317DAA72F00D2C190 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "f5vpn/f5vpn-Prefix.pch";
@@ -424,6 +430,7 @@
 		CE3D551417DAA72F00D2C190 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "f5vpn/f5vpn-Prefix.pch";

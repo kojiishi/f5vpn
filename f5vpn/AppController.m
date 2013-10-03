@@ -23,11 +23,13 @@
 #endif
     BOOL isStatusEventListenerAttached;
     BOOL isConnected;
+    NSArray* _interfaces;
 }
 
 - (void)awakeFromNib
 {
     NSLog(@"awakeFromNib");
+    [self observeWifi];
     [self login];
 }
 
@@ -247,6 +249,31 @@
     }
 
     return NetworkSetDefaultKey;
+}
+
+- (void)observeWifi
+{
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(SSIDDidChange:) name:CWSSIDDidChangeNotification object:nil];
+
+    // For CoreWLAN to send notifications, we need to hold open CWInterface instances.
+    // http://stackoverflow.com/questions/15047338/is-there-a-nsnotificationcenter-notification-for-wifi-network-changes
+
+    NSSet* interfaceNames = [CWInterface interfaceNames];
+    NSMutableArray* interfaces = [[NSMutableArray alloc] initWithCapacity:[interfaceNames count]];
+    for (NSString* name in interfaceNames) {
+        NSLog(@"CWInterface: %@", name);
+        CWInterface* interface = [CWInterface interfaceWithName:name];
+        if (interface)
+            [interfaces addObject:interface];
+    }
+    _interfaces = [interfaces copy];
+}
+
+- (void)SSIDDidChange:(NSNotification*)notification
+{
+    NSLog(@"SSIDDidChange");
+    [self updateLocation];
 }
 
 - (void)showError:(NSError*)error

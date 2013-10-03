@@ -51,6 +51,7 @@
     NSLog(@"savePrefs");
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:(self.isLocationEnabled.state == NSOnState) forKey:EnableNetworkSetKey];
+    [self saveLocation];
 }
 
 - (void)login

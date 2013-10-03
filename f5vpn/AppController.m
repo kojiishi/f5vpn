@@ -7,17 +7,20 @@
 //
 
 #import "AppController.h"
+#import <CoreWLAN/CoreWLAN.h>
 
 //#define ENABLE_StatusItem
 #define LoginURLKey @"LoginURL"
-#define NetworkSetKey @"Location"
+#define EnableNetworkSetKey @"EnableLocation"
+#define NetworkSetDefaultKey @"LocationDefault"
+#define NetworkSetVPNKey @"LocationVPN"
+#define NetworkSetSSIDKeyFormat @"LocationSSID%@"
 
 @implementation AppController
 {
 #ifdef ENABLE_StatusItem
     NSStatusItem* statusItem;
 #endif
-    NSString* networkSetBeforeConnected;
     BOOL isStatusEventListenerAttached;
     BOOL isConnected;
 }
@@ -39,16 +42,15 @@
 {
     NSLog(@"loadPrefs");
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    NSString* networkSetName = [defaults stringForKey:NetworkSetKey];
-    if (networkSetName)
-        _networkSetList.selectedName = networkSetName;
+    self.isLocationEnabled.state = [defaults boolForKey:EnableNetworkSetKey] ? NSOnState : NSOffState;
+    [self updateLocation];
 }
 
 - (void)savePrefs
 {
     NSLog(@"savePrefs");
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setValue:_networkSetList.selectedName forKey:NetworkSetKey];
+    [defaults setBool:(self.isLocationEnabled.state == NSOnState) forKey:EnableNetworkSetKey];
 }
 
 - (void)login
@@ -171,10 +173,10 @@
     NSLog(@"Connected");
     if (isConnected)
         return;
-    isConnected = YES;
 
-    networkSetBeforeConnected = [SCNetworkSetArrayController currentNetworkSetName];
-    [self.networkSetList setCurrentNetworkSet];
+    [self saveLocation];
+    isConnected = YES;
+    [self updateLocation];
 
     NSUserNotification* notification = [[NSUserNotification alloc] init];
     notification.title = @"f5vpn connected";
@@ -185,16 +187,65 @@
     NSLog(@"Disconnected");
     if (!isConnected)
         return;
-    isConnected = NO;
 
-    if (networkSetBeforeConnected) {
-        [SCNetworkSetArrayController setCurrentNetworkSetName:networkSetBeforeConnected];
-        networkSetBeforeConnected = nil;
-    }
-    
+    [self saveLocation];
+    isConnected = NO;
+    [self updateLocation];
+
     NSUserNotification* notification = [[NSUserNotification alloc] init];
     notification.title = @"f5vpn disconnected";
     [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+}
+
+- (void)updateLocation
+{
+    if (self.isLocationEnabled.state != NSOnState)
+        return;
+
+    NSString* key = self.currentLocationKey;
+    if (!key)
+        return;
+
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSString* networkSetName = [defaults stringForKey:key];
+    NSLog(@"updateLocation: %@=%@", key, networkSetName);
+    if (!networkSetName)
+        return;
+
+    [SCNetworkSetArrayController setCurrentNetworkSetName:networkSetName];
+}
+
+- (void)saveLocation
+{
+    if (self.isLocationEnabled.state != NSOnState)
+        return;
+
+    NSString* key = self.currentLocationKey;
+    if (!key)
+        return;
+
+    NSString* networkSetName = [SCNetworkSetArrayController currentNetworkSetName];
+    if (!networkSetName)
+        return;
+
+    NSLog(@"saveLocation: %@=%@", key, networkSetName);
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setValue:networkSetName forKey:key];
+}
+
+- (NSString*)currentLocationKey
+{
+    if (isConnected)
+        return NetworkSetVPNKey;
+
+    CWInterface* interface = [CWInterface interface];
+    if (interface && interface.serviceActive) {
+        NSString* ssid = interface.ssid;
+        if (ssid)
+            return [NSString stringWithFormat:NetworkSetSSIDKeyFormat, ssid];
+    }
+
+    return NetworkSetDefaultKey;
 }
 
 - (void)showError:(NSError*)error

@@ -663,49 +663,38 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <webView translatesAutoresizingMaskIntoConstraints="NO" id="536">
-                        <rect key="frame" x="0.0" y="49" width="496" height="311"/>
+                        <rect key="frame" x="0.0" y="0.0" width="496" height="318"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12"/>
+                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12">
+                            <nil key="identifier"/>
+                        </webPreferences>
                         <connections>
                             <outlet property="frameLoadDelegate" destination="569" id="570"/>
                         </connections>
                     </webView>
-                    <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="548">
-                        <rect key="frame" x="18" y="17" width="100" height="26"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="95" id="554"/>
-                        </constraints>
-                        <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="551" id="549">
-                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <menu key="menu" title="OtherViews" id="550">
-                                <items>
-                                    <menuItem title="Item 1" state="on" id="551"/>
-                                    <menuItem title="Item 2" id="552"/>
-                                    <menuItem title="Item 3" id="553"/>
-                                </items>
-                            </menu>
-                        </popUpButtonCell>
-                        <connections>
-                            <binding destination="558" name="content" keyPath="arrangedObjects" id="560"/>
-                            <binding destination="558" name="selectedIndex" keyPath="selectionIndex" id="579"/>
-                        </connections>
-                    </popUpButton>
                     <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="584">
-                        <rect key="frame" x="232" y="188" width="32" height="32"/>
+                        <rect key="frame" x="232" y="143" width="32" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     </progressIndicator>
+                    <button translatesAutoresizingMaskIntoConstraints="NO" id="S5Q-dV-XCJ">
+                        <rect key="frame" x="18" y="324" width="460" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="Remember Locations for VPN and SSID" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="fTs-N8-EP0">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="536" firstAttribute="top" secondItem="372" secondAttribute="top" id="542"/>
-                    <constraint firstItem="536" firstAttribute="leading" secondItem="372" secondAttribute="leading" id="543"/>
-                    <constraint firstItem="536" firstAttribute="trailing" secondItem="372" secondAttribute="trailing" id="544"/>
-                    <constraint firstAttribute="bottom" secondItem="548" secondAttribute="bottom" constant="20" symbolic="YES" id="555"/>
-                    <constraint firstItem="548" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="20" symbolic="YES" id="556"/>
-                    <constraint firstItem="548" firstAttribute="top" secondItem="536" secondAttribute="bottom" constant="8" id="557"/>
-                    <constraint firstAttribute="centerX" secondItem="584" secondAttribute="centerX" id="589"/>
-                    <constraint firstItem="584" firstAttribute="centerY" secondItem="536" secondAttribute="centerY" id="590"/>
+                    <constraint firstItem="S5Q-dV-XCJ" firstAttribute="leading" secondItem="372" secondAttribute="leading" constant="20" symbolic="YES" id="6wQ-7T-Xgw"/>
+                    <constraint firstItem="584" firstAttribute="centerX" secondItem="S5Q-dV-XCJ" secondAttribute="centerX" id="Itd-WV-i0l"/>
+                    <constraint firstItem="536" firstAttribute="top" secondItem="S5Q-dV-XCJ" secondAttribute="bottom" constant="8" symbolic="YES" id="ZDr-eV-3U4"/>
+                    <constraint firstItem="536" firstAttribute="centerX" secondItem="584" secondAttribute="centerX" id="goc-xm-NZm"/>
+                    <constraint firstItem="536" firstAttribute="leading" secondItem="372" secondAttribute="leading" id="pd1-ws-d2q"/>
+                    <constraint firstAttribute="bottom" secondItem="536" secondAttribute="bottom" id="u1R-95-qfQ"/>
+                    <constraint firstAttribute="trailing" secondItem="S5Q-dV-XCJ" secondAttribute="trailing" constant="20" symbolic="YES" id="v8w-Sk-8If"/>
+                    <constraint firstItem="584" firstAttribute="centerY" secondItem="536" secondAttribute="centerY" id="v9S-NZ-sss"/>
+                    <constraint firstItem="S5Q-dV-XCJ" firstAttribute="top" secondItem="372" secondAttribute="top" constant="20" symbolic="YES" id="zJb-wa-7nf"/>
                 </constraints>
             </view>
             <connections>
@@ -720,6 +709,7 @@
         </customObject>
         <customObject id="569" customClass="AppController">
             <connections>
+                <outlet property="isLocationEnabled" destination="S5Q-dV-XCJ" id="Hvl-Fx-wWo"/>
                 <outlet property="networkSetList" destination="558" id="572"/>
                 <outlet property="progressIndicator" destination="584" id="591"/>
                 <outlet property="webView" destination="536" id="571"/>

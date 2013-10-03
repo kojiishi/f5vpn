@@ -15,7 +15,8 @@
 @property (unsafe_unretained) IBOutlet NSWindow *window;
 @property (weak) IBOutlet WebView *webView;
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
-@property (weak) IBOutlet SCNetworkSetArrayController *networkSetList;
+@property (weak) IBOutlet NSButton *isLocationEnabled;
+
 - (IBAction)login:(id)sender;
 - (void)loadPrefs;
 - (void)savePrefs;

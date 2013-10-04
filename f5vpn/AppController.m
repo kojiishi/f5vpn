@@ -167,9 +167,7 @@
 
 - (void)didReadyToLogin
 {
-    NSUserNotification* notification = [[NSUserNotification alloc] init];
-    notification.title = @"f5vpn ready to login";
-    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+    [self notifyUser:@"Ready to login" networkSetName:nil];
 }
 
 - (void)didConnect {
@@ -179,11 +177,8 @@
 
     [self saveLocation];
     isConnected = YES;
-    [self updateLocation];
-
-    NSUserNotification* notification = [[NSUserNotification alloc] init];
-    notification.title = @"f5vpn connected";
-    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+    NSString* networkSetName = [self updateLocation];
+    [self notifyUser:@"Connected" networkSetName:networkSetName];
 }
 
 - (void)didDisconnect {
@@ -193,29 +188,29 @@
 
     [self saveLocation];
     isConnected = NO;
-    [self updateLocation];
-
-    NSUserNotification* notification = [[NSUserNotification alloc] init];
-    notification.title = @"f5vpn disconnected";
-    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+    NSString* networkSetName = [self updateLocation];
+    [self notifyUser:@"Disconnected" networkSetName:networkSetName];
 }
 
-- (void)updateLocation
+- (NSString*)updateLocation
 {
     if (self.isLocationEnabled.state != NSOnState)
-        return;
+        return nil;
 
     NSString* key = self.currentLocationKey;
     if (!key)
-        return;
+        return nil;
 
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     NSString* networkSetName = [defaults stringForKey:key];
     NSLog(@"updateLocation: %@=%@", key, networkSetName);
     if (!networkSetName)
-        return;
+        return nil;
+    if ([networkSetName isEqualToString:[SCNetworkSetArrayController currentNetworkSetName]])
+        return nil;
 
     [SCNetworkSetArrayController setCurrentNetworkSetName:networkSetName];
+    return networkSetName;
 }
 
 - (void)saveLocation
@@ -273,7 +268,17 @@
 - (void)SSIDDidChange:(NSNotification*)notification
 {
     NSLog(@"SSIDDidChange");
-    [self updateLocation];
+    NSString* networkSetName = [self updateLocation];
+    [self notifyUser:@"Wi-Fi network changed" networkSetName:networkSetName];
+}
+
+- (void)notifyUser:(NSString*)state networkSetName:(NSString*)networkSetName
+{
+    NSUserNotification* notification = [[NSUserNotification alloc] init];
+    notification.title = state;
+    if (networkSetName)
+        notification.subtitle = [NSString stringWithFormat:@"Location changed to %@", networkSetName];
+    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
 }
 
 - (void)showError:(NSError*)error

@@ -94,12 +94,14 @@
 - (void)webView:(WebView *)sender didFailProvisionalLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
 {
     NSLog(@"didFailProvisionalLoadWithError");
+    [_progressIndicator stopAnimation:self];
     [self showError:error];
 }
 
 - (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
 {
     NSLog(@"didFailLoadWithError");
+    [_progressIndicator stopAnimation:self];
     [self showError:error];
 }
 
@@ -283,7 +285,6 @@
 
 - (void)showError:(NSError*)error
 {
-    [_progressIndicator stopAnimation:self];
     [[NSAlert alertWithError:error] beginSheetModalForWindow:_window modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 

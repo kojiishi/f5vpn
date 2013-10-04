@@ -125,16 +125,16 @@
         return;
     }
     
-    [self updateStatus:dom];
+    [self updateConnectionStatus:dom];
 }
 
-- (void)updateStatus {
+- (void)updateConnectionStatus {
     DOMDocument *dom = [self.webView mainFrameDocument];
-    [self updateStatus:dom];
+    [self updateConnectionStatus:dom];
 }
 
-- (void)updateStatus:(DOMDocument *)dom {
-    NSLog(@"updateStatus");
+- (void)updateConnectionStatus:(DOMDocument *)dom {
+    NSLog(@"updateConnectionStatus");
     
     DOMElement *status = [dom getElementById:@"status"];
     if (!status)
@@ -164,12 +164,12 @@
 - (void)handleEvent:(DOMEvent *)evt;
 {
     NSLog(@"handleEvent");
-    [self updateStatus];
+    [self updateConnectionStatus];
 }
 
 - (void)didReadyToLogin
 {
-    [self notifyUser:@"Ready to login" networkSetName:nil];
+    [self notifyState:@"Ready to login" networkSetName:nil];
 }
 
 - (void)didConnect {
@@ -179,8 +179,7 @@
 
     [self saveLocation];
     isConnected = YES;
-    NSString* networkSetName = [self updateLocation];
-    [self notifyUser:@"Connected" networkSetName:networkSetName];
+    [self updateLocationWithState:@"Connected"];
 }
 
 - (void)didDisconnect {
@@ -190,8 +189,13 @@
 
     [self saveLocation];
     isConnected = NO;
+    [self updateLocationWithState:@"Disconnected"];
+}
+
+- (void)updateLocationWithState:(NSString*)state
+{
     NSString* networkSetName = [self updateLocation];
-    [self notifyUser:@"Disconnected" networkSetName:networkSetName];
+    [self notifyState:state networkSetName:networkSetName];
 }
 
 - (NSString*)updateLocation
@@ -270,11 +274,10 @@
 - (void)SSIDDidChange:(NSNotification*)notification
 {
     NSLog(@"SSIDDidChange");
-    NSString* networkSetName = [self updateLocation];
-    [self notifyUser:@"Wi-Fi network changed" networkSetName:networkSetName];
+    [self updateLocationWithState:@"Wi-Fi network changed"];
 }
 
-- (void)notifyUser:(NSString*)state networkSetName:(NSString*)networkSetName
+- (void)notifyState:(NSString*)state networkSetName:(NSString*)networkSetName
 {
     NSUserNotification* notification = [[NSUserNotification alloc] init];
     notification.title = state;

@@ -25,7 +25,6 @@
     BOOL isConnected;
     NSArray* _interfaces;
     SCNetworkReachabilityRef _reachabilityRef;
-    dispatch_queue_t _reachabilityQueue;
 }
 
 - (void)awakeFromNib
@@ -331,13 +330,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
         return; // TODO
     }
 
-    _reachabilityQueue = dispatch_queue_create("ec.koji.f5vpn.reachability", NULL);
-    if (!_reachabilityQueue) {
-        NSLog(@"dispatch_queue_create failed");
-        return; // TODO
-    }
-
-    if (!SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, _reachabilityQueue)) {
+    if (!SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, dispatch_get_main_queue())) {
         NSLog(@"SCNetworkReachabilitySetDispatchQueue failed");
         return; // TODO
     }

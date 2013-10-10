@@ -24,6 +24,8 @@
     BOOL isStatusEventListenerAttached;
     BOOL isConnected;
     NSArray* _interfaces;
+    SCNetworkReachabilityRef _reachabilityRef;
+    dispatch_queue_t _reachabilityQueue;
 }
 
 - (void)awakeFromNib
@@ -61,8 +63,15 @@
     [self login:nil];
 }
 
-- (IBAction)login:(id)sender {
-    NSURLRequest* req = [NSURLRequest requestWithURL:[self loginURL]];
+- (IBAction)login:(id)sender
+{
+    NSURL* url = [self loginURL];
+    if (!url.isFileURL && !_reachabilityRef) {
+        [self observeReachability:url];
+        if (![self isLoginReachable])
+            return;
+    }
+    NSURLRequest* req = [NSURLRequest requestWithURL:url];
     [[_webView mainFrame] loadRequest:req];
 }
 
@@ -285,6 +294,63 @@
         notification.subtitle = [NSString stringWithFormat:@"Location changed to %@", networkSetName];
     [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
 }
+
+#pragma mark - Reachability
+
+- (BOOL)isLoginReachable
+{
+    NSAssert(_reachabilityRef, @"reachabilityRef");
+    SCNetworkReachabilityFlags flags;
+    if (!SCNetworkReachabilityGetFlags(_reachabilityRef, &flags)) {
+        NSLog(@"SCNetworkReachabilityGetFlags failed");
+        return NO;
+    }
+    NSLog(@"SCNetworkReachabilityGetFlags=%x", flags);
+    return (flags & kSCNetworkReachabilityFlagsReachable);
+}
+
+- (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
+{
+    NSLog(@"reachabilityChanged: %x", flags);
+    if (flags & kSCNetworkReachabilityFlagsReachable)
+        [self login];
+}
+
+static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
+{
+    AppController* me = (__bridge AppController*)info;
+    [me reachabilityChanged:flags];
+}
+
+- (void)observeReachability:(NSURL*)url
+{
+    NSString* host = url.host;
+    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    if (!_reachabilityRef) {
+        NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
+        return; // TODO
+    }
+
+    _reachabilityQueue = dispatch_queue_create("ec.koji.f5vpn.reachability", NULL);
+    if (!_reachabilityQueue) {
+        NSLog(@"dispatch_queue_create failed");
+        return; // TODO
+    }
+
+    if (!SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, _reachabilityQueue)) {
+        NSLog(@"SCNetworkReachabilitySetDispatchQueue failed");
+        return; // TODO
+    }
+
+    SCNetworkReachabilityContext context = { 0, NULL, NULL, NULL, NULL };
+    context.info = (__bridge void*)self;
+    if (!SCNetworkReachabilitySetCallback(_reachabilityRef, reachabilityCallback, &context)) {
+        NSLog(@"SCNetworkReachabilitySetCallback failed");
+        return; // TODO
+    }
+}
+
+#pragma mark - Utilities
 
 - (void)showError:(NSError*)error
 {

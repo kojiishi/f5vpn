@@ -31,7 +31,7 @@
 {
     NSLog(@"awakeFromNib");
     [self observeWifi];
-    [self login];
+    [self loginWithReachabilityCheck:YES];
 }
 
 - (void)windowWillClose:(NSNotification*)notification
@@ -57,18 +57,19 @@
     [self saveLocation];
 }
 
-- (void)login
-{
-    [self login:nil];
-}
-
 - (IBAction)login:(id)sender
 {
+    [self loginWithReachabilityCheck:NO];
+}
+
+- (void)loginWithReachabilityCheck:(BOOL)checkReachability
+{
     NSURL* url = [self loginURL];
-    if (!url.isFileURL && !_reachabilityRef) {
-        [self observeReachability:url];
-        if (![self isLoginReachable])
+    if (checkReachability && !url.isFileURL && !_reachabilityRef) {
+        if (![self isReachable:url]) {
+            [self observeReachability:url];
             return;
+        }
     }
     NSURLRequest* req = [NSURLRequest requestWithURL:url];
     [[_webView mainFrame] loadRequest:req];
@@ -296,23 +297,36 @@
 
 #pragma mark - Reachability
 
-- (BOOL)isLoginReachable
+- (BOOL)isReachable:(NSURL*)url
 {
-    NSAssert(_reachabilityRef, @"reachabilityRef");
-    SCNetworkReachabilityFlags flags;
-    if (!SCNetworkReachabilityGetFlags(_reachabilityRef, &flags)) {
-        NSLog(@"SCNetworkReachabilityGetFlags failed");
-        return NO;
+    NSString* host = url.host;
+    SCNetworkReachabilityRef reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    if (!reachabilityRef) {
+        NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
+        return NO; // TODO
     }
+
+    SCNetworkReachabilityFlags flags;
+    if (!SCNetworkReachabilityGetFlags(reachabilityRef, &flags))
+        NSLog(@"SCNetworkReachabilityGetFlags failed");
     NSLog(@"SCNetworkReachabilityGetFlags=%x", flags);
+
+    CFRelease(reachabilityRef);
+
     return (flags & kSCNetworkReachabilityFlagsReachable);
 }
 
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
 {
     NSLog(@"reachabilityChanged: %x", flags);
-    if (flags & kSCNetworkReachabilityFlagsReachable)
-        [self login];
+    if (!_reachabilityRef) {
+        NSLog(@"stopObserveReachability done");
+        return;
+    }
+    if (flags & kSCNetworkReachabilityFlagsReachable) {
+        [self stopObserveReachability];
+        [self loginWithReachabilityCheck:NO];
+    }
 }
 
 static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
@@ -323,6 +337,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)observeReachability:(NSURL*)url
 {
+    NSAssert(!_reachabilityRef, @"Already observing");
     NSString* host = url.host;
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
     if (!_reachabilityRef) {
@@ -340,6 +355,14 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     if (!SCNetworkReachabilitySetCallback(_reachabilityRef, reachabilityCallback, &context)) {
         NSLog(@"SCNetworkReachabilitySetCallback failed");
         return; // TODO
+    }
+}
+
+- (void)stopObserveReachability
+{
+    if (_reachabilityRef) {
+        CFRelease(_reachabilityRef);
+        _reachabilityRef = NULL;
     }
 }
 

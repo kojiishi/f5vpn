@@ -66,10 +66,8 @@
 {
     NSURL* url = [self loginURL];
     if (checkReachability && !url.isFileURL && !_reachabilityRef) {
-        if (![self isReachable:url]) {
-            [self observeReachability:url];
+        if (![self isReachable:url])
             return;
-        }
     }
     NSURLRequest* req = [NSURLRequest requestWithURL:url];
     [[_webView mainFrame] loadRequest:req];
@@ -299,21 +297,26 @@
 
 - (BOOL)isReachable:(NSURL*)url
 {
+    NSAssert(!_reachabilityRef, @"reachabilityRef");
     NSString* host = url.host;
-    SCNetworkReachabilityRef reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    if (!reachabilityRef) {
+    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    if (!_reachabilityRef) {
         NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
-        return NO; // TODO
+        return NO;
     }
 
     SCNetworkReachabilityFlags flags;
-    if (!SCNetworkReachabilityGetFlags(reachabilityRef, &flags))
+    if (!SCNetworkReachabilityGetFlags(_reachabilityRef, &flags))
         NSLog(@"SCNetworkReachabilityGetFlags failed");
     NSLog(@"SCNetworkReachabilityGetFlags=%x", flags);
 
-    CFRelease(reachabilityRef);
+    if (flags & kSCNetworkReachabilityFlagsReachable) {
+        [self stopObserveReachability];
+        return YES;
+    }
 
-    return (flags & kSCNetworkReachabilityFlagsReachable);
+    [self observeReachability:url];
+    return NO;
 }
 
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
@@ -337,13 +340,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)observeReachability:(NSURL*)url
 {
-    NSAssert(!_reachabilityRef, @"Already observing");
-    NSString* host = url.host;
-    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    if (!_reachabilityRef) {
-        NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
-        return; // TODO
-    }
+    NSAssert(_reachabilityRef, @"_reachabilityRef");
 
     if (!SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, dispatch_get_main_queue())) {
         NSLog(@"SCNetworkReachabilitySetDispatchQueue failed");
@@ -360,10 +357,13 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)stopObserveReachability
 {
-    if (_reachabilityRef) {
-        CFRelease(_reachabilityRef);
-        _reachabilityRef = NULL;
-    }
+    if (!_reachabilityRef)
+        return;
+
+    SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, NULL);
+
+    CFRelease(_reachabilityRef);
+    _reachabilityRef = NULL;
 }
 
 #pragma mark - Utilities

@@ -57,6 +57,8 @@
     [self saveLocation];
 }
 
+#pragma mark - Login
+
 - (IBAction)login:(id)sender
 {
     [self loginWithReachabilityCheck:NO];
@@ -86,6 +88,8 @@
 //    [defaults setURL:url forKey:LoginURLKey];
     return url;
 }
+
+#pragma mark - WebView events
 
 - (void)webView:(WebView *)sender didStartProvisionalLoadForFrame:(WebFrame *)frame
 {
@@ -174,6 +178,8 @@
     [self updateConnectionStatus];
 }
 
+#pragma mark - Connection States
+
 - (void)didReadyToLogin
 {
     [self notifyState:@"Ready to login" networkSetName:nil];
@@ -198,6 +204,8 @@
     isConnected = NO;
     [self updateLocationWithState:@"Disconnected"];
 }
+
+#pragma mark - Locations (NetworkSets)
 
 - (void)updateLocationWithState:(NSString*)state
 {
@@ -258,6 +266,8 @@
 
     return NetworkSetDefaultKey;
 }
+
+#pragma mark - Wi-Fi
 
 - (void)observeWifi
 {

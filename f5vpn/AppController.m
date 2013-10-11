@@ -396,6 +396,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)showError:(NSError*)error
 {
+    NSLog(@"Errro %@", error);
     [[NSAlert alertWithError:error] beginSheetModalForWindow:_window modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 

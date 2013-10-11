@@ -29,6 +29,8 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 #endif
     BOOL isStatusEventListenerAttached;
     VPNConnectionState _connectionState;
+    SCNetworkReachabilityFlags _reachabilityFlags;
+    NSDate* _unreachableSince;
     NSArray* _interfaces;
     SCNetworkReachabilityRef _reachabilityRef;
 }
@@ -36,15 +38,6 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 - (void)awakeFromNib
 {
     NSLog(@"awakeFromNib");
-    [self observeWifi];
-    [self loginIfReachable];
-}
-
-- (void)windowWillClose:(NSNotification*)notification
-{
-    NSLog(@"windowWillClose");
-    [self didDisconnect];
-    [self savePrefs];
 }
 
 - (void)loadPrefs
@@ -53,6 +46,8 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     self.isLocationEnabled.state = [defaults boolForKey:EnableNetworkSetKey] ? NSOnState : NSOffState;
     [self updateLocation];
+    [self observeWifi];
+    [self loginIfReachable];
 }
 
 - (void)savePrefs
@@ -61,6 +56,13 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:(self.isLocationEnabled.state == NSOnState) forKey:EnableNetworkSetKey];
     [self saveLocation];
+}
+
+- (void)windowWillClose:(NSNotification*)notification
+{
+    NSLog(@"windowWillClose");
+    [self didDisconnect];
+    [self savePrefs];
 }
 
 #pragma mark - Login
@@ -87,6 +89,7 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 
 - (void)loginWithUrl:(NSURL*)url
 {
+    NSLog(@"Login %@", url);
     NSURLRequest* req = [NSURLRequest requestWithURL:url];
     [[_webView mainFrame] loadRequest:req];
 }
@@ -120,14 +123,19 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 
 - (void)webView:(WebView *)sender didFailProvisionalLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
 {
-    NSLog(@"didFailProvisionalLoadWithError");
+    NSLog(@"didFailProvisionalLoadWithError: %@", error);
     [_progressIndicator stopAnimation:self];
+    if (error.domain == NSURLErrorDomain && error.code == -1009) { // The Internet connection appears to be offline.
+        [self didDisconnect];
+        [frame loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"about:blank"]]];
+        return;
+    }
     [self showError:error];
 }
 
 - (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
 {
-    NSLog(@"didFailLoadWithError");
+    NSLog(@"didFailLoadWithError: %@", error);
     [_progressIndicator stopAnimation:self];
     [self showError:error];
 }
@@ -205,30 +213,29 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 
 - (void)didConnecting
 {
-    NSLog(@"didConnecting");
-    if (_connectionState == Connecting)
-        return;
-    _connectionState = Connecting;
+    [self didChangeConnectionState:Connecting stateText:@"Connecting..."];
 }
 
-- (void)didConnect {
-    NSLog(@"didConnected");
-    if (_connectionState == Connected)
+- (void)didConnect
+{
+    [self didChangeConnectionState:Connected stateText:@"Connected"];
+}
+
+- (void)didDisconnect
+{
+    [self didChangeConnectionState:Disconnected stateText:@"Disconnected"];
+}
+
+- (void)didChangeConnectionState:(VPNConnectionState)connectionState stateText:(NSString*)stateText
+{
+    NSLog(@"didChangeConnectionState:%u %@", (unsigned)connectionState, stateText);
+    if (_connectionState == connectionState)
         return;
 
     [self saveLocation];
-    _connectionState = Connected;
-    [self updateLocationWithState:@"Connected"];
-}
-
-- (void)didDisconnect {
-    NSLog(@"didDisconnected");
-    if (!_connectionState == Disconnected)
-        return;
-
-    [self saveLocation];
-    _connectionState = Disconnected;
-    [self updateLocationWithState:@"Disconnected"];
+    _connectionState = connectionState;
+    NSString* networkSetName = [self updateLocation];
+    [self notifyState:stateText networkSetName:networkSetName];
 }
 
 #pragma mark - Locations (NetworkSets)
@@ -320,52 +327,34 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     [self updateLocationWithState:@"Wi-Fi network changed"];
 }
 
-- (void)notifyState:(NSString*)state networkSetName:(NSString*)networkSetName
-{
-    NSUserNotification* notification = [[NSUserNotification alloc] init];
-    notification.title = state;
-    if (networkSetName)
-        notification.subtitle = [NSString stringWithFormat:@"Location changed to %@", networkSetName];
-    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
-}
-
 #pragma mark - Reachability
-
-- (BOOL)isReachable:(NSURL*)url
-{
-    NSAssert(!_reachabilityRef, @"reachabilityRef");
-    NSString* host = url.host;
-    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    if (!_reachabilityRef) {
-        NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
-        return NO;
-    }
-
-    SCNetworkReachabilityFlags flags;
-    if (!SCNetworkReachabilityGetFlags(_reachabilityRef, &flags))
-        NSLog(@"SCNetworkReachabilityGetFlags failed");
-    NSLog(@"SCNetworkReachabilityGetFlags=%x", flags);
-
-    if (flags & kSCNetworkReachabilityFlagsReachable) {
-        [self stopObserveReachability];
-        return YES;
-    }
-
-    [self observeReachability:url];
-    return NO;
-}
 
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
 {
-    NSLog(@"reachabilityChanged: %x, connection=%u", flags, (unsigned)_connectionState);
-    if (!_reachabilityRef) {
-        NSLog(@"stopObserveReachability done");
+    NSLog(@"reachabilityChanged: %x (was %x), connection=%u", flags, _reachabilityFlags, (unsigned)_connectionState);
+    NSAssert(_reachabilityRef, @"observeReachability was stopped");
+
+    SCNetworkReachabilityFlags changes = flags ^ _reachabilityFlags;
+    _reachabilityFlags = flags;
+
+    if (!(changes  & kSCNetworkReachabilityFlagsReachable))
+        return;
+    if (!(flags & kSCNetworkReachabilityFlagsReachable)) {
+        _unreachableSince = [NSDate date];
         return;
     }
-    if (flags & kSCNetworkReachabilityFlagsReachable) {
-//        [self stopObserveReachability];
-        [self login];
+
+    // Ignore short period of time.
+    // Short off and on can happen while connecting to VPN,
+    // or when changing Locations.
+    if (_unreachableSince) {
+        NSTimeInterval interval = [_unreachableSince timeIntervalSinceNow];
+        NSLog(@"Was unreachable for %lf seconds", -interval);
+        if (interval >= -10)
+            return;
     }
+
+    [self login];
 }
 
 static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
@@ -374,7 +363,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     [me reachabilityChanged:flags];
 }
 
-- (void)observeReachability:(NSURL*)url
+- (void)observeReachability
 {
     NSAssert(_reachabilityRef, @"_reachabilityRef");
 
@@ -383,8 +372,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
         return; // TODO
     }
 
-    SCNetworkReachabilityContext context = { 0, NULL, NULL, NULL, NULL };
-    context.info = (__bridge void*)self;
+    SCNetworkReachabilityContext context = { 0, (__bridge void*)self, NULL, NULL, NULL };
     if (!SCNetworkReachabilitySetCallback(_reachabilityRef, reachabilityCallback, &context)) {
         NSLog(@"SCNetworkReachabilitySetCallback failed");
         return; // TODO
@@ -402,11 +390,43 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     _reachabilityRef = NULL;
 }
 
+- (BOOL)isReachable:(NSURL*)url
+{
+    NSAssert(!_reachabilityRef, @"reachabilityRef");
+    NSString* host = url.host;
+    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    if (!_reachabilityRef) {
+        NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
+        return NO;
+    }
+
+    SCNetworkReachabilityFlags flags;
+    if (!SCNetworkReachabilityGetFlags(_reachabilityRef, &flags))
+        NSLog(@"SCNetworkReachabilityGetFlags failed");
+    NSLog(@"SCNetworkReachabilityGetFlags=%x", flags);
+
+    _reachabilityFlags = flags;
+    [self observeReachability];
+
+    if (flags & kSCNetworkReachabilityFlagsReachable)
+        return YES;
+
+    return NO;
+}
+
 #pragma mark - Utilities
+
+- (void)notifyState:(NSString*)state networkSetName:(NSString*)networkSetName
+{
+    NSUserNotification* notification = [[NSUserNotification alloc] init];
+    notification.title = state;
+    if (networkSetName)
+        notification.subtitle = [NSString stringWithFormat:@"Location changed to %@", networkSetName];
+    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+}
 
 - (void)showError:(NSError*)error
 {
-    NSLog(@"Errro %@", error);
     [[NSAlert alertWithError:error] beginSheetModalForWindow:_window modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 

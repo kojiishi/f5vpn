@@ -37,7 +37,7 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 {
     NSLog(@"awakeFromNib");
     [self observeWifi];
-    [self loginWithReachabilityCheck:YES];
+    [self loginIfReachable];
 }
 
 - (void)windowWillClose:(NSNotification*)notification
@@ -67,16 +67,26 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 
 - (IBAction)login:(id)sender
 {
-    [self loginWithReachabilityCheck:NO];
+    [self login];
 }
 
-- (void)loginWithReachabilityCheck:(BOOL)checkReachability
+- (void)loginIfReachable
 {
     NSURL* url = [self loginURL];
-    if (checkReachability && !url.isFileURL && !_reachabilityRef) {
+    if (!url.isFileURL && !_reachabilityRef) {
         if (![self isReachable:url])
             return;
     }
+    [self loginWithUrl:url];
+}
+
+- (void)login
+{
+    [self loginWithUrl:[self loginURL]];
+}
+
+- (void)loginWithUrl:(NSURL*)url
+{
     NSURLRequest* req = [NSURLRequest requestWithURL:url];
     [[_webView mainFrame] loadRequest:req];
 }
@@ -354,7 +364,7 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     }
     if (flags & kSCNetworkReachabilityFlagsReachable) {
 //        [self stopObserveReachability];
-        [self loginWithReachabilityCheck:NO];
+        [self login];
     }
 }
 

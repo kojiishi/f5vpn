@@ -16,13 +16,19 @@
 #define NetworkSetVPNKey @"LocationVPN"
 #define NetworkSetSSIDKeyFormat @"LocationSSID%@"
 
+typedef NS_ENUM(NSUInteger, VPNConnectionState) {
+    Disconnected,
+    Connecting,
+    Connected,
+};
+
 @implementation AppController
 {
 #ifdef ENABLE_StatusItem
     NSStatusItem* statusItem;
 #endif
     BOOL isStatusEventListenerAttached;
-    BOOL isConnected;
+    VPNConnectionState _connectionState;
     NSArray* _interfaces;
     SCNetworkReachabilityRef _reachabilityRef;
 }
@@ -170,6 +176,8 @@
         [self didConnect];
     else if ([statusText isEqualToString:@"Disconnected"])
         [self didDisconnect];
+    else
+        [self didConnecting];
 }
 
 - (void)handleEvent:(DOMEvent *)evt;
@@ -185,23 +193,31 @@
     [self notifyState:@"Ready to login" networkSetName:nil];
 }
 
+- (void)didConnecting
+{
+    NSLog(@"didConnecting");
+    if (_connectionState == Connecting)
+        return;
+    _connectionState = Connecting;
+}
+
 - (void)didConnect {
-    NSLog(@"Connected");
-    if (isConnected)
+    NSLog(@"didConnected");
+    if (_connectionState == Connected)
         return;
 
     [self saveLocation];
-    isConnected = YES;
+    _connectionState = Connected;
     [self updateLocationWithState:@"Connected"];
 }
 
 - (void)didDisconnect {
-    NSLog(@"Disconnected");
-    if (!isConnected)
+    NSLog(@"didDisconnected");
+    if (!_connectionState == Disconnected)
         return;
 
     [self saveLocation];
-    isConnected = NO;
+    _connectionState = Disconnected;
     [self updateLocationWithState:@"Disconnected"];
 }
 
@@ -254,7 +270,7 @@
 
 - (NSString*)currentLocationKey
 {
-    if (isConnected)
+    if (_connectionState == Connected)
         return NetworkSetVPNKey;
 
     CWInterface* interface = [CWInterface interface];
@@ -331,13 +347,13 @@
 
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
 {
-    NSLog(@"reachabilityChanged: %x", flags);
+    NSLog(@"reachabilityChanged: %x, connection=%u", flags, (unsigned)_connectionState);
     if (!_reachabilityRef) {
         NSLog(@"stopObserveReachability done");
         return;
     }
     if (flags & kSCNetworkReachabilityFlagsReachable) {
-        [self stopObserveReachability];
+//        [self stopObserveReachability];
         [self loginWithReachabilityCheck:NO];
     }
 }

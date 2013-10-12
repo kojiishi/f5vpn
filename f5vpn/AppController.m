@@ -18,15 +18,14 @@
 
 typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     Disconnected,
+    LoginPrompted,
     Connecting,
     Connected,
 };
 
 @implementation AppController
 {
-#ifdef ENABLE_StatusItem
     NSStatusItem* statusItem;
-#endif
     BOOL isStatusEventListenerAttached;
     VPNConnectionState _connectionState;
     SCNetworkReachabilityFlags _reachabilityFlags;
@@ -184,12 +183,6 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     NSString *statusText = [status innerText];
     NSLog(@"Status=%@", statusText);
 
-#ifdef ENABLE_StatusItem
-    if (!statusItem)
-        statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    [statusItem setTitle:statusText];
-#endif
-
     if ([statusText isEqualToString:@"Connected"])
         [self didConnect];
     else if ([statusText isEqualToString:@"Disconnected"])
@@ -208,43 +201,37 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 
 - (void)didReadyToLogin
 {
-    [self notifyState:@"Ready to login" networkSetName:nil];
+    [self notifyState:LoginPrompted networkSetName:nil];
 }
 
 - (void)didConnecting
 {
-    [self didChangeConnectionState:Connecting stateText:@"Connecting..."];
+    [self didChangeConnectionState:Connecting];
 }
 
 - (void)didConnect
 {
-    [self didChangeConnectionState:Connected stateText:@"Connected"];
+    [self didChangeConnectionState:Connected];
 }
 
 - (void)didDisconnect
 {
-    [self didChangeConnectionState:Disconnected stateText:@"Disconnected"];
+    [self didChangeConnectionState:Disconnected];
 }
 
-- (void)didChangeConnectionState:(VPNConnectionState)connectionState stateText:(NSString*)stateText
+- (void)didChangeConnectionState:(VPNConnectionState)connectionState
 {
-    NSLog(@"didChangeConnectionState:%u %@", (unsigned)connectionState, stateText);
+    NSLog(@"didChangeConnectionState:%u", (unsigned)connectionState);
     if (_connectionState == connectionState)
         return;
 
     [self saveLocation];
     _connectionState = connectionState;
     NSString* networkSetName = [self updateLocation];
-    [self notifyState:stateText networkSetName:networkSetName];
+    [self notifyState:connectionState networkSetName:networkSetName];
 }
 
 #pragma mark - Locations (NetworkSets)
-
-- (void)updateLocationWithState:(NSString*)state
-{
-    NSString* networkSetName = [self updateLocation];
-    [self notifyState:state networkSetName:networkSetName];
-}
 
 - (NSString*)updateLocation
 {
@@ -324,7 +311,7 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 - (void)SSIDDidChange:(NSNotification*)notification
 {
     NSLog(@"SSIDDidChange");
-    [self updateLocationWithState:@"Wi-Fi network changed"];
+    [self updateLocation];
 }
 
 #pragma mark - Reachability
@@ -416,10 +403,33 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 #pragma mark - Utilities
 
-- (void)notifyState:(NSString*)state networkSetName:(NSString*)networkSetName
+- (void)notifyState:(VPNConnectionState)state networkSetName:(NSString*)networkSetName
 {
+    if (!statusItem)
+        statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     NSUserNotification* notification = [[NSUserNotification alloc] init];
-    notification.title = state;
+    switch (state) {
+        case Disconnected:
+            [statusItem setTitle:@"🔴"];
+            notification.title = @"Disconnected";
+            break;
+        case LoginPrompted:
+            [statusItem setTitle:@"\u2753"]; // BLACK QUESTION MARK ORNAMENT
+            notification.title = @"Ready to Login";
+            break;
+        case Connecting:
+            [statusItem setTitle:@"🌀"];
+            notification.title = @"Connecting...";
+            break;
+        case Connected:
+            [statusItem setTitle:@"🔵"];
+            notification.title = @"Connected";
+            break;
+        default:
+            NSAssert(NO, @"state=%u", (unsigned)state);
+            break;
+    }
+
     if (networkSetName)
         notification.subtitle = [NSString stringWithFormat:@"Location changed to %@", networkSetName];
     [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];

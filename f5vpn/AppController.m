@@ -177,8 +177,10 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     NSLog(@"updateConnectionStatus");
     
     DOMElement *status = [dom getElementById:@"status"];
-    if (!status)
+    if (!status) {
+        [self didDisconnect];
         return;
+    }
 
     if (!isStatusEventListenerAttached) {
         NSLog(@"addEventListener");

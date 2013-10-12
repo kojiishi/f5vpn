@@ -75,7 +75,8 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 {
     NSURL* url = [self loginURL];
     if (!url.isFileURL && !_reachabilityRef) {
-        if (![self isReachable:url])
+        [self observeReachability:url];
+        if (![self isReachable])
             return;
     }
     [self loginWithUrl:url];
@@ -107,6 +108,12 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     return url;
 }
 
+- (void)disconnect
+{
+    [self didDisconnect];
+    [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"about:blank"]]];
+}
+
 #pragma mark - WebView events
 
 - (void)webView:(WebView *)sender didStartProvisionalLoadForFrame:(WebFrame *)frame
@@ -124,9 +131,8 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 {
     NSLog(@"didFailProvisionalLoadWithError: %@", error);
     [_progressIndicator stopAnimation:self];
-    if (error.domain == NSURLErrorDomain && error.code == -1009) { // The Internet connection appears to be offline.
-        [self didDisconnect];
-        [frame loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"about:blank"]]];
+    if (error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet) { // The Internet connection appears to be offline.
+        [self disconnect];
         return;
     }
     [self showError:error];
@@ -324,7 +330,7 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
     SCNetworkReachabilityFlags changes = flags ^ _reachabilityFlags;
     _reachabilityFlags = flags;
 
-    if (!(changes  & kSCNetworkReachabilityFlagsReachable))
+    if (!(changes & kSCNetworkReachabilityFlagsReachable))
         return;
     if (!(flags & kSCNetworkReachabilityFlagsReachable)) {
         _unreachableSince = [NSDate date];
@@ -350,9 +356,24 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     [me reachabilityChanged:flags];
 }
 
-- (void)observeReachability
+- (void)observeReachability:(NSURL*)url
 {
-    NSAssert(_reachabilityRef, @"_reachabilityRef");
+    NSLog(@"observeReachability %@", url);
+    NSAssert(!_reachabilityRef, @"reachabilityRef");
+
+    NSString* host = url.host;
+    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    if (!_reachabilityRef) {
+        NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
+        return;
+    }
+
+    // Get and save the current flags to detect changes correctly.
+    SCNetworkReachabilityFlags flags;
+    if (!SCNetworkReachabilityGetFlags(_reachabilityRef, &flags))
+        NSLog(@"SCNetworkReachabilityGetFlags failed");
+    NSLog(@"isReachable=%x", flags);
+    _reachabilityFlags = flags;
 
     if (!SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, dispatch_get_main_queue())) {
         NSLog(@"SCNetworkReachabilitySetDispatchQueue failed");
@@ -368,6 +389,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)stopObserveReachability
 {
+    NSLog(@"stopObserveReachability");
     if (!_reachabilityRef)
         return;
 
@@ -377,28 +399,10 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     _reachabilityRef = NULL;
 }
 
-- (BOOL)isReachable:(NSURL*)url
+- (BOOL)isReachable
 {
-    NSAssert(!_reachabilityRef, @"reachabilityRef");
-    NSString* host = url.host;
-    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    if (!_reachabilityRef) {
-        NSLog(@"SCNetworkReachabilityCreateWithName failed: %@", host);
-        return NO;
-    }
-
-    SCNetworkReachabilityFlags flags;
-    if (!SCNetworkReachabilityGetFlags(_reachabilityRef, &flags))
-        NSLog(@"SCNetworkReachabilityGetFlags failed");
-    NSLog(@"SCNetworkReachabilityGetFlags=%x", flags);
-
-    _reachabilityFlags = flags;
-    [self observeReachability];
-
-    if (flags & kSCNetworkReachabilityFlagsReachable)
-        return YES;
-
-    return NO;
+    NSAssert(_reachabilityRef, @"_reachabilityRef");
+    return _reachabilityFlags & kSCNetworkReachabilityFlagsReachable;
 }
 
 #pragma mark - Utilities

@@ -201,7 +201,7 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 
 - (void)didReadyToLogin
 {
-    [self notifyState:LoginPrompted networkSetName:nil];
+    [self didChangeConnectionState:LoginPrompted];
 }
 
 - (void)didConnecting

@@ -97,13 +97,10 @@ typedef NS_ENUM(NSUInteger, VPNConnectionState) {
 - (NSURL*)loginURL
 {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    NSURL* url = [defaults URLForKey:LoginURLKey];
-    if (url)
-        return url;
     NSString* urlString = [defaults stringForKey:LoginURLKey];
     if (urlString)
         return [NSURL URLWithString:urlString];
-    url = [[NSBundle mainBundle] URLForResource:@"NoURL" withExtension:@"html"];
+    NSURL* url = [[NSBundle mainBundle] URLForResource:@"NoURL" withExtension:@"html"];
 //    [defaults setURL:url forKey:LoginURLKey];
     return url;
 }
